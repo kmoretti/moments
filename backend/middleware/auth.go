@@ -4,9 +4,9 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	model "github.com/kingwrcy/moments/db"
-	"github.com/kingwrcy/moments/handler"
-	"github.com/kingwrcy/moments/vo"
+	model "github.com/kmoretti/moments/db"
+	"github.com/kmoretti/moments/handler"
+	"github.com/kmoretti/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
 	"gorm.io/gorm"

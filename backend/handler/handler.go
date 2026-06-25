@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/kingwrcy/moments/db"
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/db"
+	"github.com/kmoretti/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
 	"github.com/samber/do/v2"

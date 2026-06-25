@@ -3,11 +3,11 @@
     <div class="flex flex-col gap-1 items-center">
       <NuxtLink
         v-if="!starsLoadFailed"
-        to="https://github.com/kingwrcy/moments"
+        to="https://github.com/kmoretti/moments"
         target="_blank"
       >
         <img
-          src="https://img.shields.io/github/stars/kingwrcy/moments"
+          src="https://img.shields.io/github/stars/kmoretti/moments"
           class="h-6 inline-block mr-1"
           alt="github"
           @error="onStarsLoadFailed"

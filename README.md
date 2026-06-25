@@ -1,13 +1,13 @@
 # Moments - 极简朋友圈
 
-[![release](https://img.shields.io/badge/release-更新记录-blue)](https://github.com/kingwrcy/moments/releases)
-[![docker-release-status](https://img.shields.io/github/actions/workflow/status/kingwrcy/moments/docker-image-release.yml)](https://github.com/kingwrcy/moments/actions/workflows/docker-image-release.yml)
+[![release](https://img.shields.io/badge/release-更新记录-blue)](https://github.com/kmoretti/moments/releases)
+[![docker-release-status](https://img.shields.io/github/actions/workflow/status/kmoretti/moments/docker-image-release.yml)](https://github.com/kmoretti/moments/actions/workflows/docker-image-release.yml)
 [![telegram-group](https://img.shields.io/badge/Telegram-group-blue)](https://t.me/simple_moments)
 [![discussion](https://img.shields.io/badge/moments-论坛-blue)](https://discussion.mblog.club)
 
 > 从 v0.2.1 开始，Moments 采用 Golang 重写服务端，包体积更小，功能更强！
 >
-> 仍需 v0.2.0 版本？[点这里](https://github.com/kingwrcy/moments/blob/master/README.md)
+> 仍需 v0.2.0 版本？[点这里](https://github.com/kmoretti/moments/blob/master/README.md)
 
 ---
 
@@ -145,7 +145,7 @@ echo <你的 GitHub Personal Access Token> | docker login ghcr.io -u <你的 Git
 
 ### 使用可执行文件启动
 
-[下载最新版本](https://github.com/kingwrcy/moments/releases)
+[下载最新版本](https://github.com/kmoretti/moments/releases)
 
 示例（Windows 版）：
 
@@ -280,6 +280,6 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 ## Star History
 
-[![Star History](https://api.star-history.com/svg?repos=kingwrcy/moments&type=Date)](https://star-history.com/#kingwrcy/moments&Date)
+[![Star History](https://api.star-history.com/svg?repos=kmoretti/moments&type=Date)](https://star-history.com/#kmoretti/moments&Date)
 
 如果你觉得 Moments 还不错，欢迎点个 Star！

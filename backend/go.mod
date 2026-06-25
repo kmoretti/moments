@@ -1,4 +1,4 @@
-module github.com/kingwrcy/moments
+module github.com/kmoretti/moments
 
 go 1.23.3
 

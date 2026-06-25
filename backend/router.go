@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/kingwrcy/moments/handler"
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/handler"
+	"github.com/kmoretti/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/samber/do/v2"

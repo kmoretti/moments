@@ -13,15 +13,15 @@ import (
 	"strings"
 	"time"
 
-	fs_util "github.com/kingwrcy/moments/util"
+	fs_util "github.com/kmoretti/moments/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-	"github.com/kingwrcy/moments/db"
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/db"
+	"github.com/kmoretti/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
 	"gorm.io/gorm"

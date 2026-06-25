@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/vo"
 	"github.com/rs/zerolog"
 	"github.com/samber/do/v2"
 	"os"

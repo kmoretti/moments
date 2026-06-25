@@ -3,7 +3,7 @@ package db
 import (
 	"time"
 
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/vo"
 )
 
 type Memo struct {

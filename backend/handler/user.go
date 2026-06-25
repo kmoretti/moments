@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/kingwrcy/moments/db"
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/db"
+	"github.com/kmoretti/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
 	"golang.org/x/crypto/bcrypt"

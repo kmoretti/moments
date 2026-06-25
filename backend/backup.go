@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/glebarez/sqlite"
-	fs_util "github.com/kingwrcy/moments/util"
-	"github.com/kingwrcy/moments/vo"
+	fs_util "github.com/kmoretti/moments/util"
+	"github.com/kmoretti/moments/vo"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )

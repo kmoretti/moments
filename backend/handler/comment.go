@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kingwrcy/moments/db"
+	"github.com/kmoretti/moments/db"
 
-	"github.com/kingwrcy/moments/pkg/mail"
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/pkg/mail"
+	"github.com/kmoretti/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
 	"github.com/samber/do/v2"

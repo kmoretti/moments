@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/kingwrcy/moments/db"
-	"github.com/kingwrcy/moments/handler"
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/db"
+	"github.com/kmoretti/moments/handler"
+	"github.com/kmoretti/moments/vo"
 	"github.com/rs/zerolog"
 	"github.com/tidwall/gjson"
 	"gorm.io/gorm"

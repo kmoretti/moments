@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kingwrcy/moments/vo"
+	"github.com/kmoretti/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
 )
