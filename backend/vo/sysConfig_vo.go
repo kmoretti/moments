@@ -32,7 +32,7 @@ type SysConfigVO struct {
 	CommentOrder           string      `json:"commentOrder,omitempty"`     //评论展示的顺序,asc:顺序,desc:逆序
 	TimeFormat             string      `json:"timeFormat,omitempty"`       //时间格式
 	EnableRegister         bool        `json:"enableRegister"`             //是否开启注册用户
-	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启来访者天气
+	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启博主所在地天气
 	VisitorWeatherCity     string      `json:"visitorWeatherCity,omitempty"`
 	Music                  MusicItemVO `json:"music"`
 	Version                string      `json:"version,omitempty"`
@@ -68,7 +68,7 @@ type FullSysConfigVO struct {
 	CommentOrder           string      `json:"commentOrder,omitempty"`     //评论展示的顺序,asc:顺序,desc:逆序
 	TimeFormat             string      `json:"timeFormat,omitempty"`       //时间格式
 	EnableRegister         bool        `json:"enableRegister"`             //是否开启注册用户
-	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启来访者天气
+	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启博主所在地天气
 	VisitorWeatherCity     string      `json:"visitorWeatherCity,omitempty"`
 	Music                  MusicItemVO `json:"music"`
 	EnableEmail            bool        `json:"enableEmail,omitempty"`      //是否启用邮箱

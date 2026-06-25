@@ -27,11 +27,11 @@
     <UFormGroup label="是否开启注册用户" name="enableRegister" :ui="{label:{base:'font-bold'}}">
       <UToggle v-model="state.enableRegister"/>
     </UFormGroup>
-    <UFormGroup label="是否开启来访者天气" name="enableVisitorWeather" :ui="{label:{base:'font-bold'}}">
+    <UFormGroup label="是否开启博主所在地天气" name="enableVisitorWeather" :ui="{label:{base:'font-bold'}}">
       <UToggle v-model="state.enableVisitorWeather"/>
     </UFormGroup>
     <template v-if="state.enableVisitorWeather">
-      <UFormGroup label="天气城市" name="visitorWeatherCity" :ui="{label:{base:'font-bold'}}">
+      <UFormGroup label="所在城市" name="visitorWeatherCity" :ui="{label:{base:'font-bold'}}">
         <UInput v-model="state.visitorWeatherCity" placeholder="填写城市名称，如：北京"/>
       </UFormGroup>
     </template>
