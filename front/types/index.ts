@@ -56,6 +56,11 @@ export type UserVO = {
     coverUrl: string
     email: string
 }
+export type MusicItemVO = {
+    url: string
+    external: boolean
+}
+
 export type SysConfigVO = {
     version: string,
     commitId: string,
@@ -69,6 +74,7 @@ export type SysConfigVO = {
     enableAutoLoadNextPage: boolean
     enableS3: boolean
     enableRegister: boolean
+    enableVisitorWeather: boolean
     enableGoogleRecaptcha: boolean,
     googleSiteKey: string,
     enableComment: boolean,
@@ -76,6 +82,7 @@ export type SysConfigVO = {
     memoMaxHeight: number,
     commentOrder: 'desc' | 'asc',
     timeFormat: 'timeAgo' | 'time',
+    music: MusicItemVO,
     s3:{
         thumbnailSuffix:string
     }
@@ -84,6 +91,14 @@ export type SysConfigVO = {
     smtpPort: string
     smtpUsername: string
     smtpPassword: string
+}
+
+export type WeatherCurrentVO = {
+    location: string
+    weather: string
+    temperature: number
+    airQuality: string
+    wind: string
 }
 
 

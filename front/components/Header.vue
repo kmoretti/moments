@@ -54,6 +54,13 @@
     </div>
 
     <div
+      v-if="$route.path === '/' && sysConfig.music?.url"
+      class="absolute top-3 left-3 z-20 hidden sm:block"
+    >
+      <TopMusicPlayer :music="sysConfig.music" />
+    </div>
+
+    <div
       class="dark:bg-neutral-800 hidden sm:flex sm:absolute sm:-right-10 sm:rounded sm:p-2 sm:flex-col sm:w-fit justify-end shadow w-full flex-row top-0 p-1 flex gap-2 bg-white"
     >
       <svg
@@ -116,12 +123,6 @@
           class="text-[#9fc84a] w-5 h-5 cursor-pointer"
         />
       </NuxtLink>
-      <NuxtLink v-if="$route.path === '/'" to="/friend" title="友情链接">
-        <UIcon
-          name="i-carbon-friendship"
-          class="text-[#9fc84a] w-5 h-5 cursor-pointer"
-        />
-      </NuxtLink>
       <NuxtLink
         v-if="$route.path !== '/sys/settings' && global.userinfo.id === 1"
         to="/sys/settings"
@@ -150,7 +151,19 @@
       </NuxtLink>
     </div>
 
+    <div
+      v-if="$route.path === '/' && sysConfig.music?.url"
+      class="absolute top-3 left-3 z-20 sm:hidden"
+    >
+      <TopMusicPlayer :music="sysConfig.music" />
+    </div>
+
     <img class="header-img w-full" :src="props.user.coverUrl" alt="" />
+    <div v-if="weatherText" class="absolute left-4 bottom-4 z-10 max-w-[calc(100%-120px)] rounded-xl bg-black/30 px-3 py-2 text-white backdrop-blur-sm transition-all sm:left-6 sm:bottom-6">
+      <div class="text-sm font-medium leading-none text-white/95" :class="{ 'animate-pulse text-white/80': weatherState === 'loading', 'text-white/70': weatherState === 'error' }">
+        {{ weatherText }}
+      </div>
+    </div>
     <div class="absolute right-2 bottom-[-40px]">
       <div class="userinfo flex flex-col">
         <div class="flex flex-row items-center gap-4 justify-end">
@@ -171,15 +184,44 @@
 </template>
 <script setup lang="ts">
 import { toast } from "vue-sonner";
-import type { UserVO } from "~/types";
+import { computed, onMounted, ref } from "vue";
+import type { SysConfigVO, UserVO, WeatherCurrentVO } from "~/types";
 import { useGlobalState } from "~/store";
 
 const global = useGlobalState();
 const route = useRoute();
+const sysConfig = useState<SysConfigVO>("sysConfig");
 
 const props = defineProps<{ user: UserVO }>();
 const mode = useColorMode();
 const { y } = useWindowScroll();
+const weatherInfo = ref<WeatherCurrentVO | null>(null);
+const weatherState = ref<"idle" | "loading" | "success" | "error">("idle");
+
+const weatherText = computed(() => {
+  if (weatherState.value === "loading") {
+    return "正在获取当前位置天气...";
+  }
+  if (weatherState.value === "error") {
+    return "天气暂时不可用，稍后再试";
+  }
+  if (!weatherInfo.value) {
+    return "";
+  }
+  const parts = [
+    weatherInfo.value.location,
+    weatherEmoji(weatherInfo.value.weather),
+    weatherInfo.value.weather,
+    `${weatherInfo.value.temperature}℃`,
+  ];
+  if (weatherInfo.value.airQuality && weatherInfo.value.airQuality !== "--") {
+    parts.push(weatherInfo.value.airQuality);
+  }
+  if (weatherInfo.value.wind) {
+    parts.push(weatherInfo.value.wind);
+  }
+  return parts.filter(Boolean).join(" ");
+});
 
 const logout = async () => {
   global.value.userinfo = {};
@@ -196,6 +238,30 @@ const toggleMode = () => {
     toast.success("显示模式将跟随系统设置");
   }
 };
+
+const weatherEmoji = (weather: string) => {
+  if (weather.includes("雷")) return "⛈️";
+  if (weather.includes("雪")) return "❄️";
+  if (weather.includes("雨")) return "🌧️";
+  if (weather.includes("雾")) return "🌫️";
+  if (weather.includes("晴")) return "☀️";
+  if (weather.includes("云") || weather.includes("阴")) return "☁️";
+  return "🌤️";
+};
+
+onMounted(async () => {
+  if (route.path !== "/" || !sysConfig.value.enableVisitorWeather) {
+    return;
+  }
+  weatherState.value = "loading";
+  try {
+    weatherInfo.value = await useMyFetch<WeatherCurrentVO>("/sysConfig/weather/current");
+    weatherState.value = "success";
+  } catch {
+    weatherInfo.value = null;
+    weatherState.value = "error";
+  }
+});
 </script>
 
 <style scoped></style>

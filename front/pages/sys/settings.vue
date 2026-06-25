@@ -27,6 +27,9 @@
     <UFormGroup label="是否开启注册用户" name="enableRegister" :ui="{label:{base:'font-bold'}}">
       <UToggle v-model="state.enableRegister"/>
     </UFormGroup>
+    <UFormGroup label="是否开启来访者天气" name="enableVisitorWeather" :ui="{label:{base:'font-bold'}}">
+      <UToggle v-model="state.enableVisitorWeather"/>
+    </UFormGroup>
     <UFormGroup label="备案号" name="beiAnNo" :ui="{label:{base:'font-bold'}}">
       <UInput v-model="state.beiAnNo" placeholder="没有可以不填写"/>
     </UFormGroup>
@@ -38,6 +41,30 @@
     </UFormGroup>
     <UFormGroup label="自定义RSS" name="rss" :ui="{label:{base:'font-bold'}}">
       <UTextarea v-model="state.rss" :rows="1"  placeholder="留空使用默认配置"/>
+    </UFormGroup>
+    <UFormGroup label="顶部音乐播放器" name="musicExternal" :ui="{label:{base:'font-bold'}}">
+      <div class="space-y-4">
+        <div class="text-sm text-gray-500 dark:text-gray-400">仅保留音源类型和音乐地址，和前台播放器保持一致。</div>
+
+        <USelectMenu
+          v-model="state.music.external"
+          :options="[{label:'上传音乐',value:false},{label:'音乐外链',value:true}]"
+          value-attribute="value"
+          option-attribute="label"
+        />
+
+        <template v-if="!state.music.external">
+          <div class="space-y-2">
+            <UInput type="file" size="sm" accept="audio/*" @change="uploadMusic"/>
+            <div class="text-xs text-gray-500 break-all">{{ state.music.url || '暂未上传音乐文件' }}</div>
+          </div>
+        </template>
+        <template v-else>
+          <UInput v-model="state.music.url" placeholder="https://example.com/demo.mp3"/>
+        </template>
+
+        <UButton color="gray" variant="outline" class="justify-center self-start" @click="resetMusic">清空音乐配置</UButton>
+      </div>
     </UFormGroup>
     <UFormGroup label="评论最大字数" name="maxCommentLength" :ui="{label:{base:'font-bold'}}">
       <UInput v-model.number="state.maxCommentLength"/>
@@ -146,6 +173,7 @@ const state = reactive({
   enableAutoLoadNextPage: true,
   enableComment: true,
   enableRegister: true,
+  enableVisitorWeather: false,
   maxCommentLength: 120,
   memoMaxHeight: 300,
   commentOrder: 'desc',
@@ -157,6 +185,10 @@ const state = reactive({
   css: "",
   js: "",
   rss: "",
+  music: {
+    url: "",
+    external: false,
+  },
   enableS3: false,
   s3: {
     domain: "",
@@ -202,6 +234,36 @@ const uploadFavicon = async (files: FileList) => {
   if (result.length) {
     toast.success("上传成功")
     state.favicon = result[0]
+  }
+}
+
+const uploadFileByType = async (files: FileList, type: 'audio' | 'image') => {
+  for (let i = 0; i < files.length; i++) {
+    if (files[i].type.indexOf(type) < 0) {
+      toast.error(type === 'audio' ? '只能上传音频文件' : '只能上传图片');
+      return ''
+    }
+  }
+  const result = await useUpload(files)
+  if (result.length) {
+    toast.success('上传成功')
+    return result[0]
+  }
+  return ''
+}
+
+const uploadMusic = async (files: FileList) => {
+  const url = await uploadFileByType(files, 'audio')
+  if (url) {
+    state.music.url = url
+    state.music.external = false
+  }
+}
+
+const resetMusic = () => {
+  state.music = {
+    url: '',
+    external: false,
   }
 }
 

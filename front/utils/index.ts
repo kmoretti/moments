@@ -10,13 +10,14 @@ const global = useGlobalState()
 
 export const useMyFetch = async <T>(url: string, data?: any) => {
   const headers: Record<string, string> = {}
+  const config = useRuntimeConfig()
 
   const userinfo = global.value.userinfo
   if (userinfo.token) {
     headers["x-api-token"] = userinfo.token
   }
 
-  const res = await $fetch<ResultVO<T>>(`/api${url}`, {
+  const res = await $fetch<ResultVO<T>>(`${config.public.apiBase}${url}`, {
     method: "post",
     body: data ? JSON.stringify(data) : null,
     headers: headers,

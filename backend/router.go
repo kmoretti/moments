@@ -14,6 +14,7 @@ func setupRouter(injector do.Injector) {
 	memoHandler := handler.NewMemoHandler(injector)
 	commentHandler := handler.NewCommentHandler(injector)
 	sycConfigHandler := handler.NewSysConfigHandler(injector)
+	weatherHandler := handler.NewWeatherHandler(injector)
 	fileHandler := handler.NewFileHandler(injector)
 	tagHandler := handler.NewTagHandler(injector)
 	rssHandler := handler.NewRssHandler(injector)
@@ -48,6 +49,7 @@ func setupRouter(injector do.Injector) {
 	sycConfigGroup.POST("/save", sycConfigHandler.SaveConfig)
 	sycConfigGroup.POST("/get", sycConfigHandler.GetConfig)
 	sycConfigGroup.POST("/getFull", sycConfigHandler.GetFullConfig)
+	sycConfigGroup.POST("/weather/current", weatherHandler.GetCurrentWeather)
 
 	tagGroup := apiGroup.Group("/tag")
 	tagGroup.POST("/list", tagHandler.List)

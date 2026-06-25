@@ -2,7 +2,6 @@
 
 [![release](https://img.shields.io/badge/release-更新记录-blue)](https://github.com/kingwrcy/moments/releases)
 [![docker-release-status](https://img.shields.io/github/actions/workflow/status/kingwrcy/moments/docker-image-release.yml)](https://github.com/kingwrcy/moments/actions/workflows/docker-image-release.yml)
-[![docker-pull](https://img.shields.io/docker/pulls/kingwrcy/moments)](https://hub.docker.com/repository/docker/kingwrcy/moments)
 [![telegram-group](https://img.shields.io/badge/Telegram-group-blue)](https://t.me/simple_moments)
 [![discussion](https://img.shields.io/badge/moments-论坛-blue)](https://discussion.mblog.club)
 
@@ -81,7 +80,15 @@ LOG_LEVEL=info
 
 ### 使用 Docker Cli 启动
 
-启动容器（需替换 `$JWT_KEY`）：
+镜像发布在当前 GitHub 仓库的软件包（GitHub Packages / GHCR）中，镜像地址格式为：
+
+- `ghcr.io/<你的 GitHub 用户名>/<仓库名>:latest`
+
+对于当前仓库，示例镜像名为：
+
+- `ghcr.io/<你的 GitHub 用户名>/moments:latest`
+
+启动容器（需替换 `$JWT_KEY` 与镜像名）：
 
 ```bash
 docker run -d \
@@ -90,20 +97,24 @@ docker run -d \
   -p 3000:3000 \
   -v /var/moments:/app/data \
   --name moments \
-  kingwrcy/moments:latest
+  ghcr.io/<你的 GitHub 用户名>/moments:latest
 ```
 
 镜像标签可选：
 
-- latest：稳定版
-- dev：开发版，功能前沿但相对不稳定
+- latest：`main` 分支最新可部署镜像
+- main：`main` 分支镜像标签
+- sha-<commit>：某次提交对应镜像
+- 自定义标签：可通过手动触发 workflow 时传入 `image_tag`
 
 ### 使用 Docker Compose 启动
+
+GHCR 示例：
 
 ```yaml
 services:
   moments:
-    image: kingwrcy/moments:latest
+    image: ghcr.io/<你的 GitHub 用户名>/moments:latest
     container_name: moments
     restart: always
     environment:
@@ -114,6 +125,23 @@ services:
     volumes:
       - /var/moments:/app/data # 持久化数据到主机的 /var/moments 目录，可以按需修改
 ```
+
+仓库中的 [docker-compose.yml](file:///e:/kmoretti-github/moments/docker-compose.yml) 默认已经指向 GHCR 镜像，你也可以通过 `IMAGE` 环境变量切换到自己的镜像，例如：
+
+```bash
+IMAGE=ghcr.io/<你的 GitHub 用户名>/moments:latest docker compose up -d
+```
+
+如果仓库或镜像包是私有的，先在服务器登录 GHCR：
+
+```bash
+echo <你的 GitHub Personal Access Token> | docker login ghcr.io -u <你的 GitHub 用户名> --password-stdin
+```
+
+建议该 Token 至少具备：
+
+- `read:packages`
+- 私有仓库场景下对应仓库访问权限
 
 ### 使用可执行文件启动
 

@@ -1,6 +1,7 @@
+# GHCR 示例：将 IMAGE 替换为 ghcr.io/<你的 GitHub 用户名>/moments:latest
 services:
   moments:
-    image: kingwrcy/moments:latest
+    image: ${IMAGE:-ghcr.io/kmoretti/moments:latest}
     container_name: moments
     restart: always
     environment:

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full md:w-[567px] mx-auto h-full shadow-2xl dark:bg-neutral-900"
+    class="w-full md:w-[567px] mx-auto min-h-screen shadow-2xl dark:bg-neutral-900 bg-stone-50/90 dark:bg-neutral-900"
   >
     <slot />
     <Footer />
@@ -69,11 +69,11 @@ const global = useGlobalState();
 const open = useState<boolean>("sidebarOpen", () => false);
 const currentUser = useState<UserVO>("userinfo");
 const sysConfig = useState<SysConfigVO>("sysConfig");
-const currentProfile = await useMyFetch<UserVO>("/user/profile");
+const currentProfile = await useMyFetch<UserVO>("/user/profile").catch(() => null);
 const sysConfigVO = await useMyFetch<SysConfigVO>("/sysConfig/get");
+sysConfig.value = sysConfigVO;
 if (currentProfile) {
   currentUser.value = currentProfile;
-  sysConfig.value = sysConfigVO;
 }
 const { y } = useWindowScroll();
 useHead({

@@ -3,8 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/kingwrcy/moments/db"
+	"github.com/kingwrcy/moments/pkg/util"
 	"github.com/kingwrcy/moments/vo"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
@@ -94,6 +96,33 @@ func (s SysConfigHandler) GetFullConfig(c echo.Context) error {
 //	@Param		x-api-token	header	string				true	"登录TOKEN"
 //	@Success	200
 //	@Router		/api/sysConfig/save [post]
+func validateMusicConfig(music vo.MusicItemVO) error {
+	music.Url = strings.TrimSpace(music.Url)
+	music.Cover = strings.TrimSpace(music.Cover)
+
+	if music.Url == "" {
+		return nil
+	}
+
+	if music.External {
+		valid, _ := util.ValidHttpUrl(music.Url)
+		if !valid {
+			return errors.New("音乐外链格式不正确")
+		}
+	} else if !strings.HasPrefix(music.Url, "/upload/") {
+		return errors.New("本地音乐必须先上传到服务器")
+	}
+
+	if music.Cover != "" && !strings.HasPrefix(music.Cover, "/upload/") {
+		valid, _ := util.ValidHttpUrl(music.Cover)
+		if !valid {
+			return errors.New("封面地址格式不正确")
+		}
+	}
+
+	return nil
+}
+
 func (s SysConfigHandler) SaveConfig(c echo.Context) error {
 	var (
 		config db.SysConfig
@@ -108,6 +137,10 @@ func (s SysConfigHandler) SaveConfig(c echo.Context) error {
 	if err := c.Bind(&result); err != nil {
 		s.base.log.Info().Msgf("保存配置错误,%s", err)
 		return FailResp(c, ParamError)
+	}
+
+	if err := validateMusicConfig(result.Music); err != nil {
+		return FailRespWithMsg(c, ParamError, err.Error())
 	}
 
 	data, err := json.Marshal(result)
