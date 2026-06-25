@@ -11,14 +11,8 @@ type S3VO struct {
 }
 
 type MusicItemVO struct {
-	Title    string `json:"title,omitempty"`
-	Artist   string `json:"artist,omitempty"`
-	Cover    string `json:"cover,omitempty"`
-	Url      string `json:"url,omitempty"`
-	External bool   `json:"external"`
-	Autoplay bool   `json:"autoplay"`
-	Loop     bool   `json:"loop"`
-	Lyrics   string `json:"lyrics,omitempty"`
+	Url  string `json:"url,omitempty"`
+	Loop bool   `json:"loop"`
 }
 
 type SysConfigVO struct {
@@ -38,6 +32,8 @@ type SysConfigVO struct {
 	CommentOrder           string      `json:"commentOrder,omitempty"`     //评论展示的顺序,asc:顺序,desc:逆序
 	TimeFormat             string      `json:"timeFormat,omitempty"`       //时间格式
 	EnableRegister         bool        `json:"enableRegister"`             //是否开启注册用户
+	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启来访者天气
+	VisitorWeatherCity     string      `json:"visitorWeatherCity,omitempty"`
 	Music                  MusicItemVO `json:"music"`
 	Version                string      `json:"version,omitempty"`
 	CommitId               string      `json:"commitId,omitempty"`
@@ -73,6 +69,7 @@ type FullSysConfigVO struct {
 	TimeFormat             string      `json:"timeFormat,omitempty"`       //时间格式
 	EnableRegister         bool        `json:"enableRegister"`             //是否开启注册用户
 	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启来访者天气
+	VisitorWeatherCity     string      `json:"visitorWeatherCity,omitempty"`
 	Music                  MusicItemVO `json:"music"`
 	EnableEmail            bool        `json:"enableEmail,omitempty"`      //是否启用邮箱
 	SmtpHost               string      `json:"smtpHost,omitempty"`         //smtp host

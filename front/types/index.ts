@@ -58,7 +58,7 @@ export type UserVO = {
 }
 export type MusicItemVO = {
     url: string
-    external: boolean
+    loop: boolean
 }
 
 export type SysConfigVO = {
@@ -75,6 +75,7 @@ export type SysConfigVO = {
     enableS3: boolean
     enableRegister: boolean
     enableVisitorWeather: boolean
+    visitorWeatherCity: string
     enableGoogleRecaptcha: boolean,
     googleSiteKey: string,
     enableComment: boolean,
@@ -92,15 +93,6 @@ export type SysConfigVO = {
     smtpUsername: string
     smtpPassword: string
 }
-
-export type WeatherCurrentVO = {
-    location: string
-    weather: string
-    temperature: number
-    airQuality: string
-    wind: string
-}
-
 
 export type MetingJSDTO = {
     id: string | undefined

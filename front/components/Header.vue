@@ -159,9 +159,21 @@
     </div>
 
     <img class="header-img w-full" :src="props.user.coverUrl" alt="" />
-    <div v-if="weatherText" class="absolute left-4 bottom-4 z-10 max-w-[calc(100%-120px)] rounded-xl bg-black/30 px-3 py-2 text-white backdrop-blur-sm transition-all sm:left-6 sm:bottom-6">
-      <div class="text-sm font-medium leading-none text-white/95" :class="{ 'animate-pulse text-white/80': weatherState === 'loading', 'text-white/70': weatherState === 'error' }">
-        {{ weatherText }}
+    <div
+      v-if="showWeatherWidget"
+      class="absolute left-4 bottom-4 z-10 max-w-[calc(100%-120px)] overflow-hidden rounded-2xl border border-white/12 bg-black/22 px-3.5 py-2.5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-md transition-all dark:border-white/10 dark:bg-black/28 dark:shadow-[0_10px_28px_rgba(0,0,0,0.3)] sm:left-6 sm:bottom-6"
+    >
+      <div class="absolute inset-0 bg-gradient-to-br from-white/14 via-white/6 to-transparent dark:from-white/10 dark:via-white/4"></div>
+      <div class="relative flex items-center gap-2.5">
+        <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-white/40 shadow-[0_0_0_3px_rgba(255,255,255,0.08)] dark:bg-white/35 dark:shadow-[0_0_0_3px_rgba(255,255,255,0.05)]"></span>
+        <div class="min-w-0 weather-text flex items-center gap-2 text-sm leading-none text-white/95">
+          <span class="truncate max-w-[6rem]">{{ weatherLocationText }}</span>
+          <span aria-hidden="true">{{ weatherEmoji }}</span>
+          <span class="truncate max-w-[4rem]">{{ weatherStatusText }}</span>
+          <span>{{ weatherTempText }}</span>
+          <span class="weather-badge">{{ weatherAqiText }}</span>
+          <span class="truncate max-w-[5rem]">{{ weatherWindText }}</span>
+        </div>
       </div>
     </div>
     <div class="absolute right-2 bottom-[-40px]">
@@ -184,8 +196,8 @@
 </template>
 <script setup lang="ts">
 import { toast } from "vue-sonner";
-import { computed, onMounted, ref } from "vue";
-import type { SysConfigVO, UserVO, WeatherCurrentVO } from "~/types";
+import { computed, ref, watch } from "vue";
+import type { SysConfigVO, UserVO } from "~/types";
 import { useGlobalState } from "~/store";
 
 const global = useGlobalState();
@@ -195,32 +207,81 @@ const sysConfig = useState<SysConfigVO>("sysConfig");
 const props = defineProps<{ user: UserVO }>();
 const mode = useColorMode();
 const { y } = useWindowScroll();
-const weatherInfo = ref<WeatherCurrentVO | null>(null);
-const weatherState = ref<"idle" | "loading" | "success" | "error">("idle");
+const showWeatherWidget = computed(
+  () => route.path === "/" && Boolean(sysConfig.value.enableVisitorWeather),
+);
 
-const weatherText = computed(() => {
-  if (weatherState.value === "loading") {
-    return "正在获取当前位置天气...";
-  }
-  if (weatherState.value === "error") {
-    return "天气暂时不可用，稍后再试";
-  }
-  if (!weatherInfo.value) {
-    return "";
-  }
-  const parts = [
-    weatherInfo.value.location,
-    weatherEmoji(weatherInfo.value.weather),
-    weatherInfo.value.weather,
-    `${weatherInfo.value.temperature}℃`,
-  ];
-  if (weatherInfo.value.airQuality && weatherInfo.value.airQuality !== "--") {
-    parts.push(weatherInfo.value.airQuality);
-  }
-  if (weatherInfo.value.wind) {
-    parts.push(weatherInfo.value.wind);
-  }
-  return parts.filter(Boolean).join(" ");
+type ClientWeatherResp = {
+  code?: number;
+  message?: string;
+  data?: {
+    location?: {
+      name?: string;
+      province?: string;
+      city?: string;
+      county?: string;
+    };
+    weather?: {
+      condition?: string;
+      temperature?: number;
+      wind_direction?: string;
+      wind_power?: string;
+    };
+    air_quality?: {
+      aqi?: number;
+      quality?: string;
+    };
+  };
+};
+
+type WeatherViewModel = {
+  location: string;
+  weather: string;
+  temperature: string;
+  airQuality: string;
+  wind: string;
+};
+
+const weatherInfo = ref<WeatherViewModel | null>(null);
+const weatherLoading = ref(false);
+const weatherError = ref("");
+
+const weatherEmoji = computed(() => {
+  const weather = weatherInfo.value?.weather ?? "";
+  if (weather.includes("雷")) return "⛈️";
+  if (weather.includes("雪")) return "❄️";
+  if (weather.includes("雨")) return "🌧️";
+  if (weather.includes("雾")) return "🌫️";
+  if (weather.includes("晴")) return "☀️";
+  if (weather.includes("云") || weather.includes("阴")) return "⛅";
+  return "🌤️";
+});
+
+const weatherLocationText = computed(() => {
+  if (weatherLoading.value) return "正在获取天气...";
+  if (weatherError.value) return "天气获取失败";
+  return weatherInfo.value?.location || "天气获取失败";
+});
+
+const weatherStatusText = computed(() => {
+  if (weatherLoading.value) return "请稍候";
+  if (weatherError.value) return weatherError.value;
+  return weatherInfo.value?.weather || "未知";
+});
+
+const weatherTempText = computed(() => {
+  if (weatherLoading.value || weatherError.value) return "--";
+  return weatherInfo.value?.temperature || "--";
+});
+
+const weatherAqiText = computed(() => {
+  if (weatherLoading.value || weatherError.value) return "--";
+  return weatherInfo.value?.airQuality || "--";
+});
+
+const weatherWindText = computed(() => {
+  if (weatherLoading.value || weatherError.value) return "--";
+  return weatherInfo.value?.wind || "--";
 });
 
 const logout = async () => {
@@ -239,29 +300,99 @@ const toggleMode = () => {
   }
 };
 
-const weatherEmoji = (weather: string) => {
-  if (weather.includes("雷")) return "⛈️";
-  if (weather.includes("雪")) return "❄️";
-  if (weather.includes("雨")) return "🌧️";
-  if (weather.includes("雾")) return "🌫️";
-  if (weather.includes("晴")) return "☀️";
-  if (weather.includes("云") || weather.includes("阴")) return "☁️";
-  return "🌤️";
+const formatAQI = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined || value === "") return "--";
+  return String(value);
 };
 
-onMounted(async () => {
-  if (route.path !== "/" || !sysConfig.value.enableVisitorWeather) {
+const getWeatherQuery = (): string => {
+  return sysConfig.value.visitorWeatherCity?.trim() || "北京";
+};
+
+const normalizeWeather = (weather: ClientWeatherResp): WeatherViewModel => {
+  const location = (weather.data?.location?.city || weather.data?.location?.name || "未知位置").replace(/市$/, "");
+
+  return {
+    location,
+    weather: weather.data?.weather?.condition || "未知",
+    temperature: weather.data?.weather?.temperature !== undefined
+      ? String(weather.data.weather.temperature) + "°C"
+      : "--",
+    airQuality: weather.data?.air_quality?.quality || formatAQI(weather.data?.air_quality?.aqi),
+    wind: [weather.data?.weather?.wind_direction, weather.data?.weather?.wind_power]
+      .filter(Boolean)
+      .join(" ") || "--",
+  };
+};
+
+const loadWeather = async () => {
+  if (!showWeatherWidget.value) {
+    weatherInfo.value = null;
+    weatherLoading.value = false;
+    weatherError.value = "";
     return;
   }
-  weatherState.value = "loading";
+
+  weatherLoading.value = true;
+  weatherError.value = "";
+
   try {
-    weatherInfo.value = await useMyFetch<WeatherCurrentVO>("/sysConfig/weather/current");
-    weatherState.value = "success";
-  } catch {
+    const query = getWeatherQuery();
+    const weather = await $fetch<ClientWeatherResp>("/api/weather", {
+      query: { query },
+    });
+
+    if (weather.code && weather.code !== 200) {
+      throw new Error(weather.message || "天气服务返回异常");
+    }
+
+    weatherInfo.value = normalizeWeather(weather);
+  } catch (error) {
     weatherInfo.value = null;
-    weatherState.value = "error";
+    weatherError.value = error instanceof Error ? error.message : "天气获取失败";
+  } finally {
+    weatherLoading.value = false;
   }
-});
+};
+
+watch(
+  () => [showWeatherWidget.value, sysConfig.value.visitorWeatherCity] as const,
+  async ([enabled], old) => {
+    const prev = old ?? [undefined, undefined] as unknown as [boolean, string];
+    const [prevEnabled, prevCity] = prev;
+    if (!enabled) {
+      weatherInfo.value = null;
+      weatherError.value = "";
+      weatherLoading.value = false;
+      return;
+    }
+    if (enabled === prevEnabled && sysConfig.value.visitorWeatherCity === prevCity) {
+      return;
+    }
+    await loadWeather();
+  },
+  { immediate: true },
+);
 </script>
 
-<style scoped></style>
+<style scoped>
+.weather-text {
+  flex-wrap: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.weather-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.45rem;
+  padding: 0 0.45rem;
+  border-radius: 0.55rem;
+  background: linear-gradient(180deg, #8df46a 0%, #63cf45 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1;
+  box-shadow: 0 6px 16px rgba(99, 207, 69, 0.22);
+}
+</style>

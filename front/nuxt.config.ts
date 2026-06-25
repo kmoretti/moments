@@ -52,16 +52,16 @@ export default defineNuxtConfig({
         server: {
             proxy: {
                 "/api": {
-                    target: "http://localhost:37892",
+                    target: process.env.NUXT_DEV_PROXY_TARGET || "http://127.0.0.1:37893",
                 },
                 "/upload": {
-                    target: "http://localhost:37892",
+                    target: process.env.NUXT_DEV_PROXY_TARGET || "http://127.0.0.1:37893",
                 },
                 "/rss": {
-                    target: "http://localhost:37892",
+                    target: process.env.NUXT_DEV_PROXY_TARGET || "http://127.0.0.1:37893",
                 },
                 "/swagger": {
-                    target: "http://localhost:37892",
+                    target: process.env.NUXT_DEV_PROXY_TARGET || "http://127.0.0.1:37893",
                 },
             },
         },

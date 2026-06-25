@@ -39,6 +39,7 @@
       ref="audioRef"
       :src="music.url"
       preload="metadata"
+      :loop="music.loop"
       @play="isPlaying = true"
       @pause="onPause"
       @loadedmetadata="onLoadedMetadata"

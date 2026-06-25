@@ -30,6 +30,11 @@
     <UFormGroup label="是否开启来访者天气" name="enableVisitorWeather" :ui="{label:{base:'font-bold'}}">
       <UToggle v-model="state.enableVisitorWeather"/>
     </UFormGroup>
+    <template v-if="state.enableVisitorWeather">
+      <UFormGroup label="天气城市" name="visitorWeatherCity" :ui="{label:{base:'font-bold'}}">
+        <UInput v-model="state.visitorWeatherCity" placeholder="填写城市名称，如：北京"/>
+      </UFormGroup>
+    </template>
     <UFormGroup label="备案号" name="beiAnNo" :ui="{label:{base:'font-bold'}}">
       <UInput v-model="state.beiAnNo" placeholder="没有可以不填写"/>
     </UFormGroup>
@@ -42,26 +47,20 @@
     <UFormGroup label="自定义RSS" name="rss" :ui="{label:{base:'font-bold'}}">
       <UTextarea v-model="state.rss" :rows="1"  placeholder="留空使用默认配置"/>
     </UFormGroup>
-    <UFormGroup label="顶部音乐播放器" name="musicExternal" :ui="{label:{base:'font-bold'}}">
+    <UFormGroup label="顶部音乐播放器" name="musicUrl" :ui="{label:{base:'font-bold'}}">
       <div class="space-y-4">
-        <div class="text-sm text-gray-500 dark:text-gray-400">仅保留音源类型和音乐地址，和前台播放器保持一致。</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">填写音频链接或上传音乐文件</div>
 
-        <USelectMenu
-          v-model="state.music.external"
-          :options="[{label:'上传音乐',value:false},{label:'音乐外链',value:true}]"
-          value-attribute="value"
-          option-attribute="label"
-        />
+        <UInput v-model="state.music.url" placeholder="https://example.com/demo.mp3"/>
 
-        <template v-if="!state.music.external">
-          <div class="space-y-2">
-            <UInput type="file" size="sm" accept="audio/*" @change="uploadMusic"/>
-            <div class="text-xs text-gray-500 break-all">{{ state.music.url || '暂未上传音乐文件' }}</div>
-          </div>
-        </template>
-        <template v-else>
-          <UInput v-model="state.music.url" placeholder="https://example.com/demo.mp3"/>
-        </template>
+        <UFormGroup label="是否循环播放" name="musicLoop" :ui="{label:{base:'font-bold'}}">
+          <UToggle v-model="state.music.loop"/>
+        </UFormGroup>
+
+        <div class="space-y-2">
+          <UInput type="file" size="sm" accept="audio/*" @change="uploadMusic"/>
+          <div class="text-xs text-gray-500 break-all">{{ state.music.url || '暂未上传音乐文件' }}</div>
+        </div>
 
         <UButton color="gray" variant="outline" class="justify-center self-start" @click="resetMusic">清空音乐配置</UButton>
       </div>
@@ -174,6 +173,7 @@ const state = reactive({
   enableComment: true,
   enableRegister: true,
   enableVisitorWeather: false,
+  visitorWeatherCity: "",
   maxCommentLength: 120,
   memoMaxHeight: 300,
   commentOrder: 'desc',
@@ -187,7 +187,7 @@ const state = reactive({
   rss: "",
   music: {
     url: "",
-    external: false,
+    loop: true,
   },
   enableS3: false,
   s3: {
@@ -256,14 +256,13 @@ const uploadMusic = async (files: FileList) => {
   const url = await uploadFileByType(files, 'audio')
   if (url) {
     state.music.url = url
-    state.music.external = false
   }
 }
 
 const resetMusic = () => {
   state.music = {
     url: '',
-    external: false,
+    loop: true,
   }
 }
 

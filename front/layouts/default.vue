@@ -1,9 +1,13 @@
 <template>
   <div
-    class="w-full md:w-[567px] mx-auto min-h-screen shadow-2xl dark:bg-neutral-900 bg-stone-50/90 dark:bg-neutral-900"
+    class="min-h-screen w-full bg-stone-100 dark:bg-neutral-950"
   >
-    <slot />
-    <Footer />
+    <div
+      class="w-full md:w-[567px] mx-auto min-h-screen shadow-2xl bg-stone-50/90 dark:bg-neutral-900"
+    >
+      <slot />
+      <Footer />
+    </div>
   </div>
 
   <div

@@ -30,6 +30,14 @@ func NewSysConfigHandler(injector do.Injector) *SysConfigHandler {
 //	@Produce		json
 //	@Success		200	{object}	vo.SysConfigVO
 //	@Router			/sysConfig/get [post]
+func sanitizeMusicConfig(music *vo.MusicItemVO) {
+	music.Url = strings.TrimSpace(music.Url)
+}
+
+func sanitizeVisitorWeatherCity(city string) string {
+	return strings.TrimSpace(city)
+}
+
 func (s SysConfigHandler) GetConfig(c echo.Context) error {
 	var (
 		config db.SysConfig
@@ -43,6 +51,8 @@ func (s SysConfigHandler) GetConfig(c echo.Context) error {
 	if err != nil {
 		return FailRespWithMsg(c, Fail, "读取系统配置异常")
 	}
+	sanitizeMusicConfig(&result.Music)
+	result.VisitorWeatherCity = sanitizeVisitorWeatherCity(result.VisitorWeatherCity)
 	result.Version = s.base.cfg.Version
 	result.CommitId = s.base.cfg.CommitId
 
@@ -98,29 +108,17 @@ func (s SysConfigHandler) GetFullConfig(c echo.Context) error {
 //	@Router		/api/sysConfig/save [post]
 func validateMusicConfig(music vo.MusicItemVO) error {
 	music.Url = strings.TrimSpace(music.Url)
-	music.Cover = strings.TrimSpace(music.Cover)
 
 	if music.Url == "" {
 		return nil
 	}
 
-	if music.External {
-		valid, _ := util.ValidHttpUrl(music.Url)
-		if !valid {
-			return errors.New("音乐外链格式不正确")
-		}
-	} else if !strings.HasPrefix(music.Url, "/upload/") {
-		return errors.New("本地音乐必须先上传到服务器")
+	valid, _ := util.ValidHttpUrl(music.Url)
+	if valid || strings.HasPrefix(music.Url, "/upload/") {
+		return nil
 	}
 
-	if music.Cover != "" && !strings.HasPrefix(music.Cover, "/upload/") {
-		valid, _ := util.ValidHttpUrl(music.Cover)
-		if !valid {
-			return errors.New("封面地址格式不正确")
-		}
-	}
-
-	return nil
+	return errors.New("音乐链接格式不正确")
 }
 
 func (s SysConfigHandler) SaveConfig(c echo.Context) error {
@@ -142,6 +140,8 @@ func (s SysConfigHandler) SaveConfig(c echo.Context) error {
 	if err := validateMusicConfig(result.Music); err != nil {
 		return FailRespWithMsg(c, ParamError, err.Error())
 	}
+
+	result.VisitorWeatherCity = sanitizeVisitorWeatherCity(result.VisitorWeatherCity)
 
 	data, err := json.Marshal(result)
 	if err != nil {

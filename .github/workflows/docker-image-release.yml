@@ -61,3 +61,5 @@ jobs:
           build-args: |
             VERSION=${{ github.ref_name }}
             COMMIT_ID=${{ env.COMMIT_ID }}
+          cache-from: type=gha,scope=buildkit
+          cache-to: type=gha,scope=buildkit,mode=max
