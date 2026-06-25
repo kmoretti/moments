@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://127.0.0.1:37893/api",
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || "/api",
     },
   },
     compatibilityDate: '2024-04-03',
