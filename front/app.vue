@@ -1,14 +1,18 @@
 <template>
   <NuxtLayout>
     <NuxtPage/>
-    <Toaster richColors position="top-center"/>
+    <Toaster richColors position="top-center" :style="{ top: toastTop + 'px' }"/>
   </NuxtLayout>
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { Toaster } from 'vue-sonner'
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import '~/assets/simple-markdown.scss'
+
+const { width } = useWindowSize()
+const toastTop = computed(() => width.value < 640 ? 96 : 120)
 </script>
 
 <style>

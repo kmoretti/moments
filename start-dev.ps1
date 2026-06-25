@@ -1,4 +1,7 @@
 $ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+chcp 65001 > $null
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backend = Join-Path $root 'backend'
@@ -7,24 +10,24 @@ $goBin = 'E:\go\bin\go.exe'
 $pnpmCommand = Get-Command 'pnpm' -ErrorAction SilentlyContinue
 
 if (-not (Test-Path $backend)) {
-  Write-Host '未找到 backend 目录，请确认脚本位于仓库根目录。' -ForegroundColor Red
+  Write-Host 'backend directory not found. Please run this script from repo root.' -ForegroundColor Red
   exit 1
 }
 
 if (-not (Test-Path $front)) {
-  Write-Host '未找到 front 目录，请确认脚本位于仓库根目录。' -ForegroundColor Red
+  Write-Host 'front directory not found. Please run this script from repo root.' -ForegroundColor Red
   exit 1
 }
 
 if (-not (Test-Path $goBin)) {
-  Write-Host "未找到 go.exe：$goBin" -ForegroundColor Red
-  Write-Host '请先安装 Go，或把脚本中的 $goBin 改成你本机的 go.exe 路径。' -ForegroundColor Yellow
+  Write-Host "go.exe not found: $goBin" -ForegroundColor Red
+  Write-Host 'Please install Go first, or update $goBin in this script.' -ForegroundColor Yellow
   exit 1
 }
 
 if (-not $pnpmCommand) {
-  Write-Host '未找到 pnpm 命令。' -ForegroundColor Red
-  Write-Host '请先安装 pnpm，例如执行：npm install -g pnpm' -ForegroundColor Yellow
+  Write-Host 'pnpm command not found.' -ForegroundColor Red
+  Write-Host 'Please install pnpm first, for example: npm install -g pnpm' -ForegroundColor Yellow
   exit 1
 }
 
@@ -42,20 +45,36 @@ Get-CimInstance Win32_Process |
 Start-Process powershell -ArgumentList @(
   '-NoExit',
   '-Command',
-  "Set-Location '$backend'; `$env:PORT='37893'; `$env:CORS_ORIGIN='http://127.0.0.1:3000,http://localhost:3000,http://0.0.0.0:3000'; & '$goBin' run ."
+  "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new(); chcp 65001 > `$null; Set-Location '$backend'; `$env:PORT='37893'; `$env:CORS_ORIGIN='http://127.0.0.1:3000,http://localhost:3000,http://0.0.0.0:3000'; & '$goBin' run ."
 )
 
-Start-Sleep -Seconds 3
+$backendReady = $false
+for ($i = 0; $i -lt 10; $i++) {
+  Start-Sleep -Seconds 1
+  try {
+    $resp = Invoke-WebRequest -Uri 'http://127.0.0.1:37893/api/sysConfig/get' -Method Post -UseBasicParsing
+    if ($resp.StatusCode -eq 200) {
+      $backendReady = $true
+      break
+    }
+  } catch {
+  }
+}
+
+if (-not $backendReady) {
+  Write-Host 'Backend failed to start. Check the backend terminal window.' -ForegroundColor Red
+  exit 1
+}
 
 Start-Process powershell -ArgumentList @(
   '-NoExit',
   '-Command',
-  "Set-Location '$front'; `$env:NUXT_DEV_PROXY_TARGET='http://127.0.0.1:37893'; & '$($pnpmCommand.Source)' dev"
+  "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new(); chcp 65001 > `$null; Set-Location '$front'; `$env:NUXT_DEV_PROXY_TARGET='http://127.0.0.1:37893'; & '$($pnpmCommand.Source)' dev"
 )
 
 Start-Sleep -Seconds 5
 Start-Process 'http://127.0.0.1:3000/'
 
-Write-Host '本地测试已启动：'
-Write-Host '前端: http://127.0.0.1:3000/'
-Write-Host '后端: http://127.0.0.1:37893/api'
+Write-Host 'Local dev started:'
+Write-Host 'Front: http://127.0.0.1:3000/'
+Write-Host 'Backend: http://127.0.0.1:37893/api'

@@ -6,7 +6,7 @@
         <span v-if="$route.path==='/new'">新增内容</span>
         <span v-else>修改内容</span>
       </NuxtLink>
-      <UButton @click="saveMemo">发表</UButton>
+      <UButton @click="saveMemo" :loading="submitting" :disabled="submitting">发表</UButton>
     </div>
     <div class="flex gap-2 text-lg text-gray-600 pt-4 ">
       <ExternalUrl v-model:favicon="state.externalFavicon" v-model:title="state.externalTitle"
@@ -271,29 +271,37 @@ onMounted(async () => {
 //   }
 // }
 
+const submitting = ref(false)
+
 const saveMemo = async () => {
+  if (submitting.value) return
+  submitting.value = true
 
   const doubanKey = doubanType.value === 'book' ? 'doubanBook' : 'doubanMovie'
-  await useMyFetch('/memo/save', {
-    id: state.id,
-    content: state.content,
-    ext: {
-      music: state.music.id ? state.music : {},
-      [doubanKey]: doubanData.value,
-      video: state.video.value ? state.video : {},
-    },
-    pinned: state.pinned,
-    showType: state.showType ? 1 : 0,
-    externalFavicon: state.externalUrl ? state.externalFavicon : "",
-    externalTitle: state.externalTitle,
-    externalUrl: state.externalUrl,
-    imgs: state.imgs.split(",").filter(Boolean),
-    location: state.location,
-    tags: selectedLabel.value,
-    createdAt: state.createdAt || dayjs().format(),
-  })
-  toast.success("保存成功!")
-  await navigateTo('/')
+  try {
+    await useMyFetch('/memo/save', {
+      id: state.id,
+      content: state.content,
+      ext: {
+        music: state.music.id ? state.music : {},
+        [doubanKey]: doubanData.value,
+        video: state.video.value ? state.video : {},
+      },
+      pinned: state.pinned,
+      showType: state.showType ? 1 : 0,
+      externalFavicon: state.externalUrl ? state.externalFavicon : "",
+      externalTitle: state.externalTitle,
+      externalUrl: state.externalUrl,
+      imgs: state.imgs.split(",").filter(Boolean),
+      location: state.location,
+      tags: selectedLabel.value,
+      createdAt: state.createdAt || dayjs().format(),
+    })
+    toast.success("恭喜你，发布成功！")
+    await navigateTo('/')
+  } finally {
+    submitting.value = false
+  }
 }
 
 </script>
