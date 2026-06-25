@@ -161,7 +161,7 @@
     <img class="header-img w-full" :src="props.user.coverUrl" alt="" />
     <div
       v-if="showWeatherWidget"
-      class="absolute left-4 bottom-4 z-10 max-w-[calc(100%-120px)] overflow-hidden rounded-2xl border border-white/12 bg-black/22 px-3.5 py-2.5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-md transition-all dark:border-white/10 dark:bg-black/28 dark:shadow-[0_10px_28px_rgba(0,0,0,0.3)] sm:left-6 sm:bottom-6"
+      class="absolute left-4 bottom-16 z-10 max-w-[calc(100%-120px)] overflow-hidden rounded-2xl border border-white/12 bg-black/22 px-3.5 py-2.5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-md transition-all dark:border-white/10 dark:bg-black/28 dark:shadow-[0_10px_28px_rgba(0,0,0,0.3)] sm:left-6 sm:bottom-6"
     >
       <div class="absolute inset-0 bg-gradient-to-br from-white/14 via-white/6 to-transparent dark:from-white/10 dark:via-white/4"></div>
       <div class="relative flex items-center gap-2.5">
