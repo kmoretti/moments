@@ -8,19 +8,20 @@
       'is-error': status === 'error',
       'has-track': !!displayText,
       'has-lyrics': lyricLines.length > 0 && status === 'playing',
+      'is-expanded': expanded,
     }"
     :aria-label="status === 'playing' ? '关闭音乐' : '开启音乐'"
     :aria-pressed="status === 'playing'"
-    @click="togglePlay"
+    @click="onToggleExpanded"
   >
-    <span class="ambient-bars" aria-hidden="true">
+    <span class="ambient-bars" aria-hidden="true" @click.stop="togglePlay">
       <span></span>
       <span></span>
       <span></span>
       <span></span>
     </span>
     <span class="ambient-label ellipsis" aria-hidden="true">{{ displayText || '&nbsp;' }}</span>
-    <span class="ambient-progress" @click.stop>
+    <span class="ambient-progress" :class="{ 'is-visible': showProgress }" @click.stop>
       <input
         type="range"
         class="ambient-range"
@@ -46,6 +47,8 @@
       @pause="onPause"
       @ended="onEnded"
       @error="onError"
+      @timeupdate="onTimeUpdate"
+      @seeked="onSeeked"
     />
   </div>
 </template>
@@ -60,6 +63,7 @@ interface LyricLine {
 
 const props = defineProps<{
   music: MusicItemVO;
+  showProgress?: boolean;
 }>();
 
 const audioRef = ref<HTMLAudioElement | null>(null);
@@ -77,6 +81,8 @@ const loadedLyricUrl = ref('');
 const currentTime = ref(0);
 const duration = ref(0);
 const seeking = ref(false);
+const expanded = ref(false);
+let expandTimer = 0;
 
 const hasMusic = computed(() => Boolean(props.music?.url));
 const proxiedUrl = computed(() => {
@@ -191,6 +197,15 @@ const updateProgress = () => {
   progressFrame.value = requestAnimationFrame(updateProgress);
 };
 
+const isBuffered = (audio: HTMLAudioElement, time: number): boolean => {
+  for (let i = 0; i < audio.buffered.length; i++) {
+    if (time >= audio.buffered.start(i) && time <= audio.buffered.end(i)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const onSeek = (e: Event) => {
   const val = parseFloat((e.target as HTMLInputElement).value);
   currentTime.value = val;
@@ -204,12 +219,41 @@ const onSeekEnd = () => {
   const audio = audioRef.value;
   if (!audio) return;
   seeking.value = false;
-  audio.currentTime = currentTime.value;
-  // Force lyric update to current position
-  if (lyricLines.value.length && lyricFrame.value) {
+
+  const targetTime = currentTime.value;
+  if (!isBuffered(audio, targetTime)) {
+    currentTime.value = audio.currentTime;
+    return;
+  }
+
+  audio.currentTime = targetTime;
+};
+
+const onTimeUpdate = () => {
+  if (!seeking.value) {
+    currentTime.value = audioRef.value?.currentTime || 0;
+  }
+};
+
+const onSeeked = () => {
+  if (lyricFrame.value) {
     cancelAnimationFrame(lyricFrame.value);
   }
   updateLyric();
+};
+
+// ---- Mobile expand/collapse ----
+const onToggleExpanded = () => {
+  if (window.innerWidth >= 640) return;
+  expanded.value = !expanded.value;
+  if (expanded.value) {
+    clearTimeout(expandTimer);
+    expandTimer = window.setTimeout(() => {
+      expanded.value = false;
+    }, 5000);
+  } else {
+    clearTimeout(expandTimer);
+  }
 };
 
 // ---- Audio controls ----
@@ -539,7 +583,8 @@ watch(
 
 .ambient-sound.has-track .ambient-label:not(:empty),
 .ambient-sound:hover .ambient-label:not(:empty),
-.ambient-sound:focus-visible .ambient-label:not(:empty) {
+.ambient-sound:focus-visible .ambient-label:not(:empty),
+.ambient-sound.is-expanded .ambient-label:not(:empty) {
   opacity: 0.8;
   max-width: 150px;
   transform: translateX(0);
@@ -560,7 +605,9 @@ watch(
 }
 
 .ambient-sound:hover .ambient-progress,
-.ambient-sound:focus-visible .ambient-progress {
+.ambient-sound:focus-visible .ambient-progress,
+.ambient-progress.is-visible,
+.ambient-sound.is-expanded .ambient-progress {
   width: 72px;
   opacity: 1;
 }

@@ -80,6 +80,7 @@ export type SysConfigVO = {
     enableRegister: boolean
     enableVisitorWeather: boolean
     visitorWeatherCity: string
+    enableMusicProgress: boolean
     enableGoogleRecaptcha: boolean,
     googleSiteKey: string,
     enableComment: boolean,

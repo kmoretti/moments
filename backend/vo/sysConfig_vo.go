@@ -38,6 +38,7 @@ type SysConfigVO struct {
 	EnableRegister         bool        `json:"enableRegister"`             //是否开启注册用户
 	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启博主所在地天气
 	VisitorWeatherCity     string      `json:"visitorWeatherCity,omitempty"`
+	EnableMusicProgress    bool        `json:"enableMusicProgress"`        //是否显示音乐进度条
 	Music                  MusicItemVO `json:"music"`
 	Version                string      `json:"version,omitempty"`
 	CommitId               string      `json:"commitId,omitempty"`
@@ -74,6 +75,7 @@ type FullSysConfigVO struct {
 	EnableRegister         bool        `json:"enableRegister"`             //是否开启注册用户
 	EnableVisitorWeather   bool        `json:"enableVisitorWeather"`       //是否开启博主所在地天气
 	VisitorWeatherCity     string      `json:"visitorWeatherCity,omitempty"`
+	EnableMusicProgress    bool        `json:"enableMusicProgress"`        //是否显示音乐进度条
 	Music                  MusicItemVO `json:"music"`
 	EnableEmail            bool        `json:"enableEmail,omitempty"`      //是否启用邮箱
 	SmtpHost               string      `json:"smtpHost,omitempty"`         //smtp host

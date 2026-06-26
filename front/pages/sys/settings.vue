@@ -63,6 +63,10 @@
           <UToggle v-model="state.music.loop"/>
         </UFormGroup>
 
+        <UFormGroup label="是否显示进度条" name="enableMusicProgress" :ui="{label:{base:'font-bold'}}">
+          <UToggle v-model="state.enableMusicProgress"/>
+        </UFormGroup>
+
         <UFormGroup label="默认音量" name="musicVolume" :ui="{label:{base:'font-bold'}}">
           <div class="flex items-center gap-3">
             <input type="range" min="0" max="100" v-model.number="state.music.volume" class="w-40"/>
@@ -197,6 +201,7 @@ const state = reactive({
   enableRegister: true,
   enableVisitorWeather: false,
   visitorWeatherCity: "",
+  enableMusicProgress: false,
   maxCommentLength: 120,
   memoMaxHeight: 300,
   commentOrder: 'desc',
