@@ -27,6 +27,7 @@ func Auth(injector do.Injector) echo.MiddlewareFunc {
 		"/api/memo/get",
 		"/api/friend/list",
 		"/api/weather",
+		"/api/file/proxy",
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {

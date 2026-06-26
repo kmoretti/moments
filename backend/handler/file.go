@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -46,13 +48,53 @@ func NewFileHandler(injector do.Injector) *FileHandler {
 //	@Router		/api/file/upload [post]
 func (f FileHandler) Upload(c echo.Context) error {
 	var (
-		result []string
+		result   []string
+		sysConfig   db.SysConfig
+		sysConfigVo vo.FullSysConfigVO
 	)
+
+	if err := f.base.db.First(&sysConfig).Error; err != nil {
+		f.base.log.Error().Msgf("读取系统配置异常: %v", err)
+		return FailRespWithMsg(c, Fail, "读取系统配置异常")
+	}
+
+	if err := json.Unmarshal([]byte(sysConfig.Content), &sysConfigVo); err != nil {
+		f.base.log.Error().Msgf("无法反序列化系统配置, %s", err)
+		return FailRespWithMsg(c, Fail, err.Error())
+	}
 
 	form, err := c.MultipartForm()
 	if err != nil {
 		f.base.log.Error().Msgf("读取上传文件异常: %v", err)
 		return FailRespWithMsg(c, Fail, "上传文件异常")
+	}
+
+	// S3 config
+	var s3Client *s3.Client
+	if sysConfigVo.EnableS3 {
+		cfg, err := config.LoadDefaultConfig(
+			context.TODO(),
+			config.WithRegion(sysConfigVo.S3.Region),
+			config.WithEndpointResolver(
+				aws.EndpointResolverFunc(
+					func(service, region string) (aws.Endpoint, error) {
+						return aws.Endpoint{URL: sysConfigVo.S3.Endpoint}, nil
+					},
+				),
+			),
+			config.WithCredentialsProvider(
+				credentials.NewStaticCredentialsProvider(
+					sysConfigVo.S3.AccessKey,
+					sysConfigVo.S3.SecretKey,
+					"",
+				),
+			),
+		)
+		if err != nil {
+			f.base.log.Error().Msgf("无法加载S3配置, %s", err)
+			return FailRespWithMsg(c, Fail, "无法加载S3配置")
+		}
+		s3Client = s3.NewFromConfig(cfg)
 	}
 
 	if err := os.MkdirAll(f.base.cfg.UploadDir, 0755); err != nil {
@@ -79,47 +121,69 @@ func (f FileHandler) Upload(c echo.Context) error {
 
 		// 计算文件后缀
 		ext := filepath.Ext(file.Filename)
-
-		// 计算文件本地路径
 		filename := fmt.Sprintf("%s%s", sha256, ext)
-		filePath := path.Join(f.base.cfg.UploadDir, filename)
 
-		// 添加到结果中
-		result = append(result, "/upload/"+filename)
+		if s3Client != nil {
+			// S3 模式：直接上传到 S3
+			if seeker, ok := reader.(io.Seeker); ok {
+				if _, err := seeker.Seek(0, io.SeekStart); err != nil {
+					f.base.log.Error().Msgf("重置文件指针异常: %v", err)
+					return FailRespWithMsg(c, Fail, "上传文件异常")
+				}
+			}
 
-		// 如果文件存在，则跳过保存操作
-		if fs_util.Exists(filePath) {
-			continue
-		}
+			contentType := file.Header.Get("Content-Type")
+			if contentType == "" {
+				contentType = "application/octet-stream"
+			}
 
-		// 创建原始文件
-		dst, err := os.Create(filePath)
-		if err != nil {
-			f.base.log.Error().Msgf("打开目标文件异常: %v", err)
-			return FailRespWithMsg(c, Fail, "上传文件异常")
-		}
-		defer dst.Close()
+			key := fmt.Sprintf("moments/%s/%s", time.Now().Format("2006/01/02"), filename)
+			_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
+				Bucket:      aws.String(sysConfigVo.S3.Bucket),
+				Key:         aws.String(key),
+				Body:        reader,
+				ContentType: aws.String(contentType),
+			})
+			if err != nil {
+				f.base.log.Error().Msgf("S3上传文件异常: %v", err)
+				return FailRespWithMsg(c, Fail, "S3上传文件异常")
+			}
 
-		// 重置文件指针到开头
-		if seeker, ok := reader.(io.Seeker); ok {
-			if _, err := seeker.Seek(0, io.SeekStart); err != nil {
-				f.base.log.Error().Msgf("重置文件指针异常: %v", err)
+			result = append(result, fmt.Sprintf("%s/%s", strings.TrimRight(sysConfigVo.S3.Domain, "/"), key))
+		} else {
+			// 本地模式：保存到磁盘
+			filePath := path.Join(f.base.cfg.UploadDir, filename)
+			result = append(result, "/upload/"+filename)
+
+			if fs_util.Exists(filePath) {
+				continue
+			}
+
+			dst, err := os.Create(filePath)
+			if err != nil {
+				f.base.log.Error().Msgf("打开目标文件异常: %v", err)
 				return FailRespWithMsg(c, Fail, "上传文件异常")
 			}
-		}
+			defer dst.Close()
 
-		// 保存文件数据
-		if _, err = io.Copy(dst, reader); err != nil {
-			f.base.log.Error().Msgf("复制文件异常: %v", err)
-			return FailRespWithMsg(c, Fail, "上传文件异常")
-		}
+			if seeker, ok := reader.(io.Seeker); ok {
+				if _, err := seeker.Seek(0, io.SeekStart); err != nil {
+					f.base.log.Error().Msgf("重置文件指针异常: %v", err)
+					return FailRespWithMsg(c, Fail, "上传文件异常")
+				}
+			}
 
-		// 生成并保存缩略图文件
-		if SupportCompress(filename) {
-			thumb_filename := fmt.Sprintf("%s_thumb%s", sha256, ext)
-			thumb_filepath := path.Join(f.base.cfg.UploadDir, thumb_filename)
-			if err := CompressImage(f, filePath, thumb_filepath, 30); err != nil {
-				f.base.log.Error().Msgf("压缩文件异常: %v", err)
+			if _, err = io.Copy(dst, reader); err != nil {
+				f.base.log.Error().Msgf("复制文件异常: %v", err)
+				return FailRespWithMsg(c, Fail, "上传文件异常")
+			}
+
+			if SupportCompress(filename) {
+				thumb_filename := fmt.Sprintf("%s_thumb%s", sha256, ext)
+				thumb_filepath := path.Join(f.base.cfg.UploadDir, thumb_filename)
+				if err := CompressImage(f, filePath, thumb_filepath, 30); err != nil {
+					f.base.log.Error().Msgf("压缩文件异常: %v", err)
+				}
 			}
 		}
 	}
@@ -364,4 +428,36 @@ func (f FileHandler) S3PreSigned(c echo.Context) error {
 			ImageUrl:     fmt.Sprintf("%s/%s", sysConfigVo.S3.Domain, key),
 		},
 	)
+}
+
+func (f FileHandler) Proxy(c echo.Context) error {
+	rawUrl := c.QueryParam("url")
+	if rawUrl == "" {
+		return FailRespWithMsg(c, ParamError, "url is required")
+	}
+
+	parsed, err := url.ParseRequestURI(rawUrl)
+	if err != nil {
+		return FailRespWithMsg(c, ParamError, "invalid url")
+	}
+
+	resp, err := http.Get(parsed.String())
+	if err != nil {
+		return FailRespWithMsg(c, Fail, "proxy request failed")
+	}
+	defer resp.Body.Close()
+
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	c.Response().Header().Set(echo.HeaderContentType, contentType)
+	c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=86400")
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return FailRespWithMsg(c, Fail, "proxy read failed")
+	}
+
+	return c.Blob(resp.StatusCode, contentType, body)
 }

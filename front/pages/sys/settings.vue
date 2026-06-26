@@ -51,16 +51,39 @@
       <div class="space-y-4">
         <div class="text-sm text-gray-500 dark:text-gray-400">填写音频链接或上传音乐文件</div>
 
-        <UInput v-model="state.music.url" placeholder="https://example.com/demo.mp3"/>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <UInput v-model="state.music.url" placeholder="https://example.com/demo.mp3" class="flex-1"/>
+            <UInput type="file" size="sm" accept="audio/*" class="shrink-0" @change="uploadMusic"/>
+          </div>
+          <div class="text-xs text-gray-500 break-all">{{ state.music.url || '暂未上传音乐文件' }}</div>
+        </div>
 
         <UFormGroup label="是否循环播放" name="musicLoop" :ui="{label:{base:'font-bold'}}">
           <UToggle v-model="state.music.loop"/>
         </UFormGroup>
 
-        <div class="space-y-2">
-          <UInput type="file" size="sm" accept="audio/*" @change="uploadMusic"/>
-          <div class="text-xs text-gray-500 break-all">{{ state.music.url || '暂未上传音乐文件' }}</div>
-        </div>
+        <UFormGroup label="默认音量" name="musicVolume" :ui="{label:{base:'font-bold'}}">
+          <div class="flex items-center gap-3">
+            <input type="range" min="0" max="100" v-model.number="state.music.volume" class="w-40"/>
+            <span class="text-sm text-gray-500">{{ state.music.volume ?? 35 }}%</span>
+          </div>
+        </UFormGroup>
+
+        <UFormGroup label="曲名" name="musicTitle" :ui="{label:{base:'font-bold'}}">
+          <UInput v-model="state.music.title" placeholder="如：夜航"/>
+        </UFormGroup>
+
+        <UFormGroup label="作者" name="musicArtist" :ui="{label:{base:'font-bold'}}">
+          <UInput v-model="state.music.artist" placeholder="如：橘子海"/>
+        </UFormGroup>
+
+        <UFormGroup label="歌词文件" name="musicLyric" :ui="{label:{base:'font-bold'}}">
+          <div class="space-y-2">
+            <UInput v-model="state.music.lyricUrl" placeholder="在线歌词文件链接（.lrc 或 .txt）"/>
+            <UInput type="file" size="sm" accept=".lrc,.txt" @change="uploadMusicLyric"/>
+          </div>
+        </UFormGroup>
 
         <UButton color="gray" variant="outline" class="justify-center self-start" @click="resetMusic">清空音乐配置</UButton>
       </div>
@@ -188,6 +211,10 @@ const state = reactive({
   music: {
     url: "",
     loop: true,
+    title: "",
+    artist: "",
+    volume: 35,
+    lyricUrl: "",
   },
   enableS3: false,
   s3: {
@@ -237,10 +264,13 @@ const uploadFavicon = async (files: FileList) => {
   }
 }
 
-const uploadFileByType = async (files: FileList, type: 'audio' | 'image') => {
+const uploadFileByType = async (files: FileList, type: 'audio' | 'image' | 'text') => {
   for (let i = 0; i < files.length; i++) {
     if (files[i].type.indexOf(type) < 0) {
-      toast.error(type === 'audio' ? '只能上传音频文件' : '只能上传图片');
+      if (type === 'text' && (files[i].name.endsWith('.lrc') || files[i].name.endsWith('.txt') || files[i].name.endsWith('.json'))) {
+        continue
+      }
+      toast.error(type === 'audio' ? '只能上传音频文件' : type === 'text' ? '只能上传歌词/文本文件' : '只能上传图片');
       return ''
     }
   }
@@ -259,10 +289,21 @@ const uploadMusic = async (files: FileList) => {
   }
 }
 
+const uploadMusicLyric = async (files: FileList) => {
+  const url = await uploadFileByType(files, 'text')
+  if (url) {
+    state.music.lyricUrl = url
+  }
+}
+
 const resetMusic = () => {
   state.music = {
     url: '',
     loop: true,
+    title: '',
+    artist: '',
+    volume: 35,
+    lyricUrl: '',
   }
 }
 

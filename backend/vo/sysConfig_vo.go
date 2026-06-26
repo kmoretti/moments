@@ -11,8 +11,12 @@ type S3VO struct {
 }
 
 type MusicItemVO struct {
-	Url  string `json:"url,omitempty"`
-	Loop bool   `json:"loop"`
+	Url      string `json:"url,omitempty"`
+	Loop     bool   `json:"loop"`
+	Title    string `json:"title,omitempty"`
+	Artist   string `json:"artist,omitempty"`
+	Volume   int    `json:"volume,omitempty"`
+	LyricUrl string `json:"lyricUrl,omitempty"`
 }
 
 type SysConfigVO struct {

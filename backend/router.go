@@ -58,6 +58,7 @@ func setupRouter(injector do.Injector) {
 	fileGroup.POST("/upload", fileHandler.Upload)
 	fileGroup.POST("/clean", fileHandler.Clean)
 	fileGroup.POST("/s3PreSigned", fileHandler.S3PreSigned)
+	apiGroup.GET("/file/proxy", fileHandler.Proxy)
 
 	uploadGroup := e.Group("/upload")
 	uploadGroup.Use(middleware.StaticWithConfig(middleware.StaticConfig{

@@ -57,7 +57,7 @@
       v-if="$route.path === '/' && sysConfig.music?.url"
       class="absolute top-3 left-3 z-20 hidden sm:block"
     >
-      <TopMusicPlayer :music="sysConfig.music" />
+      <AmbientSound :music="sysConfig.music" />
     </div>
 
     <div
@@ -155,7 +155,7 @@
       v-if="$route.path === '/' && sysConfig.music?.url"
       class="absolute top-3 left-3 z-20 sm:hidden"
     >
-      <TopMusicPlayer :music="sysConfig.music" />
+      <AmbientSound :music="sysConfig.music" />
     </div>
 
     <img class="header-img w-full" :src="props.user.coverUrl" alt="" />

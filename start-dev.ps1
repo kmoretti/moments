@@ -42,6 +42,13 @@ Get-CimInstance Win32_Process |
     Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
   }
 
+# Wait for port to be free
+for ($i = 0; $i -lt 10; $i++) {
+  $proc = Get-NetTCPConnection -LocalPort 37893 -ErrorAction SilentlyContinue
+  if (-not $proc) { break }
+  Start-Sleep -Seconds 1
+}
+
 Start-Process powershell -ArgumentList @(
   '-NoExit',
   '-Command',

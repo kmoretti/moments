@@ -59,6 +59,10 @@ export type UserVO = {
 export type MusicItemVO = {
     url: string
     loop: boolean
+    title?: string
+    artist?: string
+    volume?: number
+    lyricUrl?: string
 }
 
 export type SysConfigVO = {
