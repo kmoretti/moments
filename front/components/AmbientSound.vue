@@ -20,21 +20,23 @@
       <span></span>
       <span></span>
     </span>
-    <span class="ambient-label ellipsis" aria-hidden="true">{{ displayText || '&nbsp;' }}</span>
-    <span class="ambient-progress" :class="{ 'is-visible': showProgress }" @click.stop>
-      <input
-        type="range"
-        class="ambient-range"
-        min="0"
-        :max="duration || 0"
-        :value="currentTime"
-        step="0.1"
-        :disabled="!duration"
-        @input="onSeek"
-        @mousedown="onSeekStart"
-        @mouseup="onSeekEnd"
-      />
-    </span>
+    <div class="ambient-main">
+      <span class="ambient-label ellipsis" aria-hidden="true">{{ displayText || '&nbsp;' }}</span>
+      <span class="ambient-progress" :class="{ 'is-visible': showProgress }" @click.stop>
+        <input
+          type="range"
+          class="ambient-range"
+          min="0"
+          :max="duration || 0"
+          :value="currentTime"
+          step="0.1"
+          :disabled="!duration"
+          @input="onSeek"
+          @mousedown="onSeekStart"
+          @mouseup="onSeekEnd"
+        />
+      </span>
+    </div>
 
     <audio
       ref="audioRef"
@@ -594,12 +596,48 @@ watch(
   opacity: 0.88;
 }
 
+/* Main area: label + progress */
+.ambient-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+/* Label */
+.ambient-label {
+  color: currentColor;
+  max-width: 0;
+  font-size: 11px;
+  line-height: 18px;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: max-width 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s, transform 0.22s;
+  transform: translateX(-4px);
+}
+
+.ambient-sound.has-track .ambient-label:not(:empty),
+.ambient-sound:hover .ambient-label:not(:empty),
+.ambient-sound:focus-visible .ambient-label:not(:empty),
+.ambient-sound.is-expanded .ambient-label:not(:empty) {
+  opacity: 0.8;
+  max-width: 180px;
+  transform: translateX(0);
+}
+
+.ambient-sound.has-lyrics .ambient-label:not(:empty) {
+  opacity: 0.88;
+}
+
 /* Progress bar */
 .ambient-progress {
   width: 0;
+  max-width: 120px;
   opacity: 0;
   overflow: hidden;
-  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s, margin 0.22s;
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s;
   display: flex;
   align-items: center;
 }
@@ -608,7 +646,7 @@ watch(
 .ambient-sound:focus-visible .ambient-progress,
 .ambient-progress.is-visible,
 .ambient-sound.is-expanded .ambient-progress {
-  width: 72px;
+  width: 100%;
   opacity: 1;
 }
 

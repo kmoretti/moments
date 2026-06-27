@@ -166,13 +166,13 @@
       <div class="absolute inset-0 bg-gradient-to-br from-white/14 via-white/6 to-transparent dark:from-white/10 dark:via-white/4"></div>
       <div class="relative flex items-center gap-2.5">
         <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-white/40 shadow-[0_0_0_3px_rgba(255,255,255,0.08)] dark:bg-white/35 dark:shadow-[0_0_0_3px_rgba(255,255,255,0.05)]"></span>
-        <div class="min-w-0 weather-text flex items-center gap-2 text-sm leading-none text-white/95">
-          <span class="truncate max-w-[6rem]">{{ weatherLocationText }}</span>
+        <div class="min-w-0 weather-text flex items-center gap-2 text-sm leading-none text-white/95 flex-wrap">
+          <span class="max-w-[6rem] sm:truncate">{{ weatherLocationText }}</span>
           <span aria-hidden="true">{{ weatherEmoji }}</span>
-          <span class="truncate max-w-[4rem]">{{ weatherStatusText }}</span>
+          <span class="max-w-[4rem] sm:truncate">{{ weatherStatusText }}</span>
           <span>{{ weatherTempText }}</span>
           <span class="weather-badge">{{ weatherAqiText }}</span>
-          <span class="truncate max-w-[5rem]">{{ weatherWindText }}</span>
+          <span class="max-w-[5rem] sm:truncate">{{ weatherWindText }}</span>
         </div>
       </div>
     </div>
